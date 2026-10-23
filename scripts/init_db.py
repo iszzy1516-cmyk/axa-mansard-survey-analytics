@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.config import settings
 from app.database import platform_engine
+from sqlalchemy import create_engine, text
 from app.users.models import Base, User
 from app.auth.security import hash_password
 
@@ -31,6 +32,13 @@ def main() -> None:
     args = parser.parse_args()
 
     print(f"Connecting to platform DB: {settings.platform_database_url.split('@')[-1]}")
+    server_url = platform_engine.url.set(database="")
+    server_engine = create_engine(server_url)
+    with server_engine.connect() as conn:
+        conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{platform_engine.url.database}`"))
+        conn.commit()
+    server_engine.dispose()
+
     Base.metadata.create_all(platform_engine)
     print("Tables created (if they did not exist).")
 
