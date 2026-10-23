@@ -13,6 +13,21 @@ class UserCreate(BaseModel):
     phone: str | None = None
 
 
+class UserUpdate(BaseModel):
+    """Partial update — fields left unset are not changed.
+
+    ``password`` follows the same rule: omit it (or send null/empty) to keep
+    the current password.
+    """
+
+    email: EmailStr | None = None
+    role: Literal["admin", "supervisor"] | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    phone: str | None = None
+    password: str | None = None
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

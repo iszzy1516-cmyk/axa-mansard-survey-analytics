@@ -29,6 +29,7 @@ import {
 } from '../../components/Chips';
 import { Pagination } from '../../components/Pagination';
 import { SearchInput } from '../../components/SearchInput';
+import { TimeInput } from '../../components/TimeInput';
 import { downloadCsv } from '../../utils/csv';
 import { formatRange, formatTimeShort, toDateInputValue, toTimeInputValue } from '../../utils/format';
 
@@ -318,10 +319,9 @@ export function ReportsPage() {
               </label>
               <label className="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-[13px] text-gray-600">
                 <Clock3 size={14} className="text-gray-400" />
-                <input
-                  type="time"
+                <TimeInput
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={setStartTime}
                   className="w-[5.4rem] bg-transparent focus:outline-none"
                 />
               </label>
@@ -343,10 +343,9 @@ export function ReportsPage() {
               </label>
               <label className="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-[13px] text-gray-600">
                 <Clock3 size={14} className="text-gray-400" />
-                <input
-                  type="time"
+                <TimeInput
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  onChange={setEndTime}
                   className="w-[5.4rem] bg-transparent focus:outline-none"
                 />
               </label>

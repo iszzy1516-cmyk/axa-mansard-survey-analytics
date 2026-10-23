@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Info, MoreHorizontal, Pencil, RefreshCw, Trash2 } from 'lucide-react';
-import { createUser, deleteUser, generatePassphrase, listUsers } from '../api';
+import { createUser, deleteUser, generatePassphrase, listUsers, updateUser } from '../api';
 import type { AppUser, Role } from '../api/types';
 import { Modal } from '../components/Modal';
 import { SearchInput } from '../components/SearchInput';
@@ -12,6 +12,7 @@ export function UserManagementPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<AppUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AppUser | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +103,7 @@ export function UserManagementPage() {
                       <button
                         type="button"
                         aria-label={`Edit ${u.username}`}
+                        onClick={() => setEditTarget(u)}
                         className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                       >
                         <Pencil size={14} />
@@ -144,12 +146,24 @@ export function UserManagementPage() {
         </div>
       </div>
 
-      <CreateUserModal
+      <UserFormModal
+        mode="create"
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onCreated={(u) => {
+        onSaved={(u) => {
           setUsers((prev) => [...prev, u].sort((a, b) => a.id - b.id));
           setCreateOpen(false);
+        }}
+      />
+
+      <UserFormModal
+        mode="edit"
+        initial={editTarget}
+        open={editTarget !== null}
+        onClose={() => setEditTarget(null)}
+        onSaved={(u) => {
+          setUsers((prev) => prev.map((x) => (x.id === u.id ? u : x)));
+          setEditTarget(null);
         }}
       />
 
@@ -181,14 +195,18 @@ export function UserManagementPage() {
   );
 }
 
-function CreateUserModal({
+function UserFormModal({
+  mode,
+  initial,
   open,
   onClose,
-  onCreated,
+  onSaved,
 }: {
+  mode: 'create' | 'edit';
+  initial?: AppUser | null;
   open: boolean;
   onClose: () => void;
-  onCreated: (user: AppUser) => void;
+  onSaved: (user: AppUser) => void;
 }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -201,32 +219,48 @@ function CreateUserModal({
 
   useEffect(() => {
     if (open) {
-      setFirstName('');
-      setLastName('');
-      setEmail('');
-      setPhone('');
-      setRole('supervisor');
+      setFirstName(mode === 'edit' && initial ? initial.firstName : '');
+      setLastName(mode === 'edit' && initial ? initial.lastName : '');
+      setEmail(mode === 'edit' && initial ? initial.email : '');
+      setPhone(mode === 'edit' && initial ? initial.phone : '');
+      setRole(mode === 'edit' && initial ? initial.role : 'supervisor');
       setPassword('');
       setError(null);
     }
-  }, [open]);
+  }, [open, mode, initial]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSaving(true);
     try {
-      const user = await createUser({ firstName, lastName, email, phone, role, password });
-      onCreated(user);
+      const user =
+        mode === 'edit' && initial
+          ? await updateUser(initial.id, {
+              firstName,
+              lastName,
+              email,
+              phone,
+              role,
+              ...(password ? { password } : {}),
+            })
+          : await createUser({ firstName, lastName, email, phone, role, password });
+      onSaved(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Create failed');
+      setError(err instanceof Error ? err.message : 'Save failed');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Create User" subtitle="New accounts receive a sign-in link by email." wide>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={mode === 'edit' ? 'Edit User' : 'Create User'}
+      subtitle={mode === 'edit' ? 'Update account details.' : 'New accounts receive a sign-in link by email.'}
+      wide
+    >
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -256,7 +290,13 @@ function CreateUserModal({
         <div>
           <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Password</label>
           <div className="flex gap-2">
-            <input value={password} onChange={(e) => setPassword(e.target.value)} className="input-base" required />
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-base"
+              required={mode === 'create'}
+              placeholder={mode === 'edit' ? 'Leave blank to keep current' : undefined}
+            />
             <button
               type="button"
               onClick={() => setPassword(generatePassphrase())}
@@ -267,6 +307,9 @@ function CreateUserModal({
               Generate
             </button>
           </div>
+          {mode === 'edit' && (
+            <p className="mt-1 text-xs text-gray-400">Leave blank to keep the current password.</p>
+          )}
         </div>
         {error && (
           <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">{error}</p>
@@ -276,7 +319,7 @@ function CreateUserModal({
             Cancel
           </button>
           <button type="submit" disabled={saving} className="btn-primary min-w-28">
-            {saving ? 'Creating…' : 'Create'}
+            {saving ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create'}
           </button>
         </div>
       </form>

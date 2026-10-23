@@ -21,6 +21,7 @@ import { answerTone, Chip, dispositionTone } from '../components/Chips';
 import { KpiCard } from '../components/KpiCard';
 import { Pagination } from '../components/Pagination';
 import { SearchInput } from '../components/SearchInput';
+import { TimeInput } from '../components/TimeInput';
 import { formatNumber, formatTimeMs, toDateInputValue, toTimeInputValue } from '../utils/format';
 
 const CHART_COLORS = { yes: '#16a34a', no: '#dc2626' };
@@ -50,12 +51,7 @@ function DateTimeField({
         className="w-[7.2rem] bg-transparent text-gray-700 focus:outline-none"
       />
       <span className="text-gray-300">|</span>
-      <input
-        type="time"
-        value={time}
-        onChange={(e) => onTime(e.target.value)}
-        className="w-[4.6rem] bg-transparent text-gray-700 focus:outline-none"
-      />
+      <TimeInput value={time} onChange={onTime} className="w-[4.6rem] bg-transparent text-gray-700 focus:outline-none" />
     </label>
   );
 }

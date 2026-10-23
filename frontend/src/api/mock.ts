@@ -548,6 +548,35 @@ export function mockDeleteUser(id: number): void {
   usersStore = usersStore.filter((u) => u.id !== id);
 }
 
+export function mockUpdateUser(
+  id: number,
+  fields: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    role?: Role;
+  },
+): AppUser {
+  let updated: AppUser | undefined;
+  usersStore = usersStore.map((u) => {
+    if (u.id !== id) return u;
+    const email = fields.email ?? u.email;
+    updated = {
+      ...u,
+      firstName: fields.firstName ?? u.firstName,
+      lastName: fields.lastName ?? u.lastName,
+      email,
+      username: email.split('@')[0].toLowerCase(),
+      phone: fields.phone ?? u.phone,
+      role: fields.role ?? u.role,
+    };
+    return updated;
+  });
+  if (!updated) throw new Error('User not found');
+  return updated;
+}
+
 export function mockFindUser(usernameOrEmail: string): AppUser | undefined {
   const q = usernameOrEmail.trim().toLowerCase();
   return usersStore.find((u) => u.email.toLowerCase() === q || u.username === q);

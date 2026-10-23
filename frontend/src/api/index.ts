@@ -10,6 +10,7 @@ import {
   mockListUsers,
   mockReport,
   mockReportRows,
+  mockUpdateUser,
 } from './mock';
 import type {
   AppUser,
@@ -196,6 +197,60 @@ export async function deleteUser(id: number): Promise<void> {
   }
   await delay(200);
   mockDeleteUser(id);
+}
+
+export interface UpdateUserInput {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  role?: Role;
+  password?: string;
+}
+
+function mapUserOut(u: {
+  id: number;
+  email: string;
+  role: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+  created_at: string;
+}): AppUser {
+  return {
+    id: u.id,
+    username: u.email.split('@')[0],
+    email: u.email,
+    phone: u.phone ?? '',
+    firstName: u.first_name,
+    lastName: u.last_name,
+    role: u.role as Role,
+    createdAt: u.created_at,
+  };
+}
+
+export async function updateUser(id: number, input: UpdateUserInput): Promise<AppUser> {
+  if (!USE_MOCK) {
+    const body: Record<string, string> = {};
+    if (input.firstName !== undefined) body.first_name = input.firstName;
+    if (input.lastName !== undefined) body.last_name = input.lastName;
+    if (input.email !== undefined) body.email = input.email;
+    if (input.phone !== undefined) body.phone = input.phone;
+    if (input.role !== undefined) body.role = input.role;
+    if (input.password) body.password = input.password;
+    const raw = await apiFetch<{
+      id: number;
+      email: string;
+      role: string;
+      first_name: string;
+      last_name: string;
+      phone: string | null;
+      created_at: string;
+    }>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+    return mapUserOut(raw);
+  }
+  await delay(300);
+  return mockUpdateUser(id, input);
 }
 
 export { DEFAULT_RANGE, generatePassphrase, mockAgents };
