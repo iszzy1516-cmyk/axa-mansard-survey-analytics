@@ -1,4 +1,4 @@
-import { apiFetch, ApiError } from './client';
+import { apiFetch, ApiError, BASE_URL } from './client';
 import {
   DEFAULT_RANGE,
   generatePassphrase,
@@ -43,7 +43,7 @@ export async function login(input: LoginInput): Promise<LoginResponse> {
     const form = new FormData();
     form.append('username', input.username);
     form.append('password', input.password);
-    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string | undefined) ?? '/api'}/auth/login`, {
+    const res = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       body: form,
     });

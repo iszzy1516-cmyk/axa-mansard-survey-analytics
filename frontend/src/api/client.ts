@@ -1,4 +1,10 @@
-const BASE_URL = (import.meta.env.VITE_API_BASE as string | undefined) ?? '/api';
+// Single source of truth for the API base. Everything the app fetches goes
+// through this: VITE_API_BASE overrides it at build time (e.g. the Cloudflare
+// Pages build bakes in the Render URL); when unset it defaults to /api on
+// whoever is serving the frontend (Vite dev proxy locally, FastAPI at home).
+const envBase = import.meta.env.VITE_API_BASE as string | undefined;
+export const BASE_URL =
+  envBase && envBase.length > 0 ? envBase : `${window.location.origin}/api`;
 
 export class ApiError extends Error {
   status: number;
