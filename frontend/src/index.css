@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+  body {
+    @apply bg-page text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .input-base {
+    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-axa-primary focus:outline-none focus:ring-1 focus:ring-axa-primary disabled:bg-gray-50 disabled:text-gray-400;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-axa-primary px-4 py-2 text-sm font-medium text-white hover:bg-axa-primaryDark focus:outline-none focus:ring-2 focus:ring-axa-primary focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-axa-primary bg-white px-4 py-2 text-sm font-medium text-axa-primary hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-axa-primary focus:ring-offset-1;
+  }
+  .card {
+    @apply rounded-lg border border-gray-200 bg-white;
+  }
+  .th-cell {
+    @apply whitespace-nowrap px-4 py-2.5 text-left text-xs font-semibold text-gray-500;
+  }
+  .td-cell {
+    @apply whitespace-nowrap px-4 py-2.5 text-sm text-gray-700;
+  }
+}
