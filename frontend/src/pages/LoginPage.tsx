@@ -9,7 +9,7 @@ export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [username, setUsername] = useState('d.okafor');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -86,18 +86,18 @@ export function LoginPage() {
 
             <form onSubmit={onSubmit} className="mt-9 space-y-5">
               <div>
-                <label htmlFor="username" className="mb-1.5 block text-[13px] font-medium text-gray-700">
-                  Username
+                <label htmlFor="email" className="mb-1.5 block text-[13px] font-medium text-gray-700">
+                  Email
                 </label>
                 <div className="relative">
                   <User size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
-                    id="username"
-                    type="text"
-                    autoComplete="username"
+                    id="email"
+                    type="email"
+                    autoComplete="email"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="d.okafor"
+                    placeholder="you@axamansard.com"
                     className="input-base py-2.5 pl-10"
                     required
                   />
