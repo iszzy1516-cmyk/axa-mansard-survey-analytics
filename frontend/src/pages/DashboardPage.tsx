@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { CalendarDays, ChevronDown, Frown, Loader2, Meh, Smile } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { DEFAULT_RANGE, getDashboard, mockAgents } from '../api';
+import { DEFAULT_RANGE, getDashboard } from '../api';
 import type { CustomerInfoRow, DashboardData } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { answerTone, Chip, dispositionTone } from '../components/Chips';
@@ -119,7 +119,7 @@ export function DashboardPage() {
     setApplied({ start: DEFAULT_RANGE.start, end: DEFAULT_RANGE.end, agent: null });
   };
 
-  const agents = useMemo(() => mockAgents(), []);
+  const agents = useMemo(() => data?.agents ?? [], [data]);
 
   const filteredRows = useMemo(() => {
     if (!data) return [] as CustomerInfoRow[];

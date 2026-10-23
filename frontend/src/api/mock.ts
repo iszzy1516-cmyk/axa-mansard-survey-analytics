@@ -120,10 +120,16 @@ interface CallEvent {
   question: string;
 }
 
-// The fixed demo window: 01 Oct 2026 9:00 AM – 21 Oct 2026 5:00 PM.
-const WINDOW_START = new Date(2026, 9, 1, 9, 0, 0, 0).getTime();
-const WINDOW_END = new Date(2026, 9, 21, 17, 0, 0, 0).getTime();
+// Dynamic demo window so the mock fallback lines up whenever it is used:
+// 21 days ending today at 5:00 PM (matching the real seed script's window).
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const _end = new Date();
+_end.setHours(17, 0, 0, 0);
+const _start = new Date(_end);
+_start.setDate(_start.getDate() - 20);
+_start.setHours(9, 0, 0, 0);
+const WINDOW_START = _start.getTime();
+const WINDOW_END = _end.getTime();
 
 function buildEvents(): CallEvent[] {
   const rand = mulberry32(20261021);
@@ -347,6 +353,12 @@ export function mockDashboard(
     yesNoByDay: yesNoByDay(rows),
     customerRows,
     satisfaction: satisfaction(rows),
+    agents:
+      role === 'admin'
+        ? AGENTS.map((a) => a.name)
+        : (SUPERVISOR_TEAMS[fullName] ?? []).filter((name) =>
+            AGENTS.some((a) => a.name === name),
+          ),
   };
 }
 

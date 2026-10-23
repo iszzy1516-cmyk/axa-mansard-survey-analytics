@@ -90,6 +90,23 @@ def main() -> None:
     IvrBase.metadata.create_all(ivr_engine)
     print(f"IVR tables created in {ivr_engine.url.database!r}.")
 
+    # Indexes for the columns the dashboard/report queries filter and join on.
+    with ivr_engine.begin() as conn:
+        for statement in [
+            "CREATE INDEX IF NOT EXISTS idx_details_inserted ON survey_requestdetails (inserted_time)",
+            "CREATE INDEX IF NOT EXISTS idx_details_phone ON survey_requestdetails (phone_clid)",
+            "CREATE INDEX IF NOT EXISTS idx_details_disposition ON survey_requestdetails (finaldisposition)",
+            "CREATE INDEX IF NOT EXISTS idx_details_agent ON survey_requestdetails (agentsurname)",
+            "CREATE INDEX IF NOT EXISTS idx_details_supervisor ON survey_requestdetails (supervisorgivenname, supervisorsurname)",
+            "CREATE INDEX IF NOT EXISTS idx_request_inserted ON survey_request (inserted_time)",
+            "CREATE INDEX IF NOT EXISTS idx_request_phone ON survey_request (phone_clid)",
+            "CREATE INDEX IF NOT EXISTS idx_response_inserted ON survey_response (inserted_time)",
+            "CREATE INDEX IF NOT EXISTS idx_response_phone ON survey_response (phone_clid)",
+            "CREATE INDEX IF NOT EXISTS idx_filtered_stamp ON survey_requestfiltered (originatedstamp)",
+            "CREATE INDEX IF NOT EXISTS idx_filtered_seq ON survey_requestfiltered (sequenceid)",
+        ]:
+            conn.execute(text(statement))
+
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     sequence = 700_000
 

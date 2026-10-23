@@ -59,6 +59,8 @@ export interface DashboardData {
   yesNoByDay: YesNoDayRow[];
   customerRows: CustomerInfoRow[];
   satisfaction: SatisfactionSummary;
+  /** Agent full names for the filter dropdown (absent in older responses). */
+  agents?: string[];
 }
 
 export type ReportType =

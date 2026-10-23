@@ -18,5 +18,10 @@ class Settings(BaseSettings):
 
     login_rate_limit: str = "5/15minutes"
 
+    # The IVR database stores naive local wall-clock times (Africa/Lagos for
+    # AXA Mansard). API boundaries are proper UTC ISO-8601; stored values are
+    # converted across this zone so timestamps render exactly as stored.
+    ivr_database_timezone: str = "Africa/Lagos"
+
 
 settings = Settings()

@@ -272,8 +272,13 @@ export function ReportsPage() {
 
   const columns = useMemo(() => columnsFor(reportType), [reportType]);
 
-  const doExport = (kind: 'csv' | 'excel') => {
-    const rows = getReportRows({ reportType, range: applied, role: role ?? 'supervisor', fullName });
+  const doExport = async (kind: 'csv' | 'excel') => {
+    const rows = await getReportRows({
+      reportType,
+      range: applied,
+      role: role ?? 'supervisor',
+      fullName,
+    });
     const stamp = new Date(applied.start).toISOString().slice(0, 10);
     if (kind === 'csv') {
       const { headers, body } = exportCsvFor(reportType, rows);

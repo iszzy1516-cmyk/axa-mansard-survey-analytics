@@ -28,7 +28,7 @@ import type {
  * /auth/login, /users, /dashboard/kpis and /reports/{type} (proxied to the
  * backend by the Vite dev server).
  */
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
@@ -111,12 +111,23 @@ export async function getReport(params: {
   return mockReport(params);
 }
 
-export function getReportRows(params: {
+export async function getReportRows(params: {
   reportType: ReportType;
   range: DateRange;
   role: Role;
   fullName: string;
-}): ReportRow[] {
+}): Promise<ReportRow[]> {
+  if (!USE_MOCK) {
+    // per_page=0 asks the backend for every matching row (for client-side export)
+    const q = new URLSearchParams({
+      start: new Date(params.range.start).toISOString(),
+      end: new Date(params.range.end).toISOString(),
+      page: '1',
+      per_page: '0',
+    });
+    const res = await apiFetch<ReportResult>(`/reports/${params.reportType}?${q.toString()}`);
+    return res.rows;
+  }
   return mockReportRows(params);
 }
 
