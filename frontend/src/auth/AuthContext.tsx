@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { login as apiLogin } from '../api';
+import { login as apiLogin, updateProfile as apiUpdateProfile } from '../api';
+import type { ProfileUpdateInput } from '../api';
 import type { Role } from '../api/types';
 
 interface AuthState {
@@ -15,6 +16,7 @@ interface AuthContextValue extends AuthState {
   isAdmin: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  updateProfile: (input: ProfileUpdateInput) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -51,6 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ token: null, role: null, fullName: '', email: '' });
   }, []);
 
+  const updateProfile = useCallback(async (input: ProfileUpdateInput) => {
+    const res = await apiUpdateProfile(input);
+    localStorage.setItem('axa_full_name', res.fullName);
+    localStorage.setItem('axa_email', res.email);
+    setState((s) => ({ ...s, fullName: res.fullName, email: res.email }));
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
@@ -58,8 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: state.role === 'admin',
       login,
       logout,
+      updateProfile,
     }),
-    [state, login, logout],
+    [state, login, logout, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

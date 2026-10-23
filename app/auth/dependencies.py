@@ -21,9 +21,18 @@ def get_current_user(
     except jwt.InvalidTokenError:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired token")
 
-    user = db.query(User).filter(User.email == payload["sub"]).first()
+    # Tokens carry the immutable user id as sub (so email changes don't kill
+    # the session) plus a token_version claim: bumping the user's version
+    # invalidates every outstanding token ("sign out of all devices").
+    try:
+        user_id = int(payload["sub"])
+    except (KeyError, TypeError, ValueError):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired token")
+    user = db.get(User, user_id)
     if user is None or not user.is_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired token")
+    if user.token_version != payload.get("tv"):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session revoked")
     return user
 
 

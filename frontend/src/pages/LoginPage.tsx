@@ -15,6 +15,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const notice = (location.state as { notice?: string } | null)?.notice ?? null;
 
   if (isAuthenticated) {
     const to = (location.state as { from?: string } | null)?.from ?? '/dashboard';
@@ -130,6 +131,12 @@ export function LoginPage() {
                   </button>
                 </div>
               </div>
+
+              {notice && (
+                <p className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-[13px] text-axa-primary">
+                  {notice}
+                </p>
+              )}
 
               {error && (
                 <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">

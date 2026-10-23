@@ -42,6 +42,26 @@ def main() -> None:
     Base.metadata.create_all(platform_engine)
     print("Tables created (if they did not exist).")
 
+    # Lightweight migration for pre-existing local databases: add columns
+    # introduced after the first deploy. Fresh databases get them from
+    # create_all above; the guard makes reruns harmless.
+    with platform_engine.begin() as conn:
+        has_version = conn.execute(
+            text(
+                "SELECT COUNT(*) FROM information_schema.COLUMNS "
+                "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' "
+                "AND COLUMN_NAME = 'token_version'"
+            )
+        ).scalar()
+        if not has_version:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN token_version INTEGER "
+                    "NOT NULL DEFAULT 1"
+                )
+            )
+            print("Migrated: users.token_version added.")
+
     if args.admin_email and args.admin_password:
         from sqlalchemy.orm import Session
 

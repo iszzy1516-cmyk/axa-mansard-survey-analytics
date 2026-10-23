@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, ApiError } from './client';
 import {
   DEFAULT_RANGE,
   generatePassphrase,
@@ -254,3 +254,135 @@ export async function updateUser(id: number, input: UpdateUserInput): Promise<Ap
 }
 
 export { DEFAULT_RANGE, generatePassphrase, mockAgents };
+
+// ---------------------------------------------------------------------------
+// Settings: profile, password, sessions, report schedule
+// ---------------------------------------------------------------------------
+
+export interface ProfileUpdateInput {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface ProfileInfo {
+  email: string;
+  role: Role;
+  fullName: string;
+}
+
+export async function updateProfile(input: ProfileUpdateInput): Promise<ProfileInfo> {
+  if (!USE_MOCK) {
+    const body: Record<string, string> = {};
+    if (input.firstName !== undefined) body.first_name = input.firstName;
+    if (input.lastName !== undefined) body.last_name = input.lastName;
+    if (input.email !== undefined) body.email = input.email;
+    if (input.phone !== undefined) body.phone = input.phone;
+    const raw = await apiFetch<{ email: string; role: Role; full_name: string }>('/auth/me', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+    return { email: raw.email, role: raw.role, fullName: raw.full_name };
+  }
+  await delay(300);
+  const fullName = `${input.firstName ?? ''} ${input.lastName ?? ''}`.trim() || 'User';
+  return { email: input.email ?? 'user@axamansard.com', role: 'admin', fullName };
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  if (!USE_MOCK) {
+    await apiFetch('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    });
+    return;
+  }
+  await delay(300);
+  if (currentPassword.length === 0) throw new Error('Current password is incorrect');
+}
+
+export async function signOutAll(): Promise<void> {
+  if (!USE_MOCK) {
+    await apiFetch('/auth/sign-out-all', { method: 'POST' });
+    return;
+  }
+  await delay(200);
+}
+
+export interface ScheduleInput {
+  frequency: 'daily' | 'weekly' | 'monthly';
+  deliveryTime: string;
+  formatExcel: boolean;
+  formatCsv: boolean;
+  recipients: string;
+}
+
+export interface Schedule extends ScheduleInput {
+  updatedAt: string;
+}
+
+const MOCK_SCHEDULE_KEY = 'axa_mock_schedule';
+
+export async function getSchedule(): Promise<Schedule | null> {
+  if (!USE_MOCK) {
+    try {
+      const s = await apiFetch<{
+        frequency: 'daily' | 'weekly' | 'monthly';
+        delivery_time: string;
+        format_excel: boolean;
+        format_csv: boolean;
+        recipients: string;
+        updated_at: string;
+      }>('/auth/me/schedule');
+      return {
+        frequency: s.frequency,
+        deliveryTime: s.delivery_time,
+        formatExcel: s.format_excel,
+        formatCsv: s.format_csv,
+        recipients: s.recipients,
+        updatedAt: s.updated_at,
+      };
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) return null;
+      throw err;
+    }
+  }
+  await delay(150);
+  const raw = localStorage.getItem(MOCK_SCHEDULE_KEY);
+  return raw ? (JSON.parse(raw) as Schedule) : null;
+}
+
+export async function saveSchedule(input: ScheduleInput): Promise<Schedule> {
+  if (!USE_MOCK) {
+    const s = await apiFetch<{
+      frequency: 'daily' | 'weekly' | 'monthly';
+      delivery_time: string;
+      format_excel: boolean;
+      format_csv: boolean;
+      recipients: string;
+      updated_at: string;
+    }>('/auth/me/schedule', {
+      method: 'PUT',
+      body: JSON.stringify({
+        frequency: input.frequency,
+        delivery_time: input.deliveryTime,
+        format_excel: input.formatExcel,
+        format_csv: input.formatCsv,
+        recipients: input.recipients,
+      }),
+    });
+    return {
+      frequency: s.frequency,
+      deliveryTime: s.delivery_time,
+      formatExcel: s.format_excel,
+      formatCsv: s.format_csv,
+      recipients: s.recipients,
+      updatedAt: s.updated_at,
+    };
+  }
+  await delay(300);
+  const schedule: Schedule = { ...input, updatedAt: new Date().toISOString() };
+  localStorage.setItem(MOCK_SCHEDULE_KEY, JSON.stringify(schedule));
+  return schedule;
+}
