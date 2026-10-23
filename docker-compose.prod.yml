@@ -1,0 +1,32 @@
+# Production deployment: API + built frontend, with its own MariaDB.
+# Used on the hosting server. Local dev uses docker-compose.yml + uvicorn + vite instead.
+
+services:
+  mariadb:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    build: .
+    environment:
+      IVR_DATABASE_URL: mysql+pymysql://root:rootpassword@mariadb:3306/ivr_sim
+      PLATFORM_DATABASE_URL: mysql+pymysql://root:rootpassword@mariadb:3306/platform
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in the environment or a .env file}
+    ports:
+      - "0.0.0.0:8080:8080"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
