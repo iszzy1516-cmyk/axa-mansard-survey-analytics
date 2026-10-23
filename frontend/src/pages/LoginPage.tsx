@@ -49,11 +49,11 @@ export function LoginPage() {
     <div className="flex min-h-full">
       {/* Left brand panel */}
       <div className="relative hidden w-[42%] overflow-hidden bg-axa md:flex md:flex-col">
-        <div className="flex items-center gap-3 px-10 pt-10">
-          <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-white p-1.5">
+        <div className="flex items-center gap-4 px-10 pt-10">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white p-2">
             <img src={logoUrl} alt="AXA" className="h-full w-full" />
           </span>
-          <span className="text-2xl font-bold text-white">AXA Mansard</span>
+          <span className="text-[26px] font-bold text-white">AXA Mansard</span>
         </div>
         <div className="flex flex-1 flex-col justify-center px-10">
           <ChartLine size={40} className="text-green-400" strokeWidth={1.75} />

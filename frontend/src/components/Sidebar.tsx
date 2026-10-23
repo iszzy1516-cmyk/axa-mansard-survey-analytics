@@ -28,8 +28,8 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
-      <div className="flex h-14 items-center gap-2.5 border-b border-gray-100 px-4">
-        <img src={logoUrl} alt="AXA" className="h-7 w-7" />
+      <div className="flex h-14 items-center gap-3 border-b border-gray-100 px-4">
+        <img src={logoUrl} alt="AXA" className="h-9 w-9 shrink-0" />
         <span className="text-[15px] font-bold tracking-tight text-gray-900">
           Survey Analytics
         </span>
