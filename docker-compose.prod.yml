@@ -21,12 +21,28 @@ services:
       IVR_DATABASE_URL: mysql+pymysql://root:rootpassword@mariadb:3306/ivr_sim
       PLATFORM_DATABASE_URL: mysql+pymysql://root:rootpassword@mariadb:3306/platform
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in the environment or a .env file}
-    ports:
-      - "0.0.0.0:8080:8080"
+    expose:
+      - "8080"
     depends_on:
       mariadb:
         condition: service_healthy
     restart: unless-stopped
 
+  # public entry point: reverse proxy on 80/443 + ACME challenge for certbot
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
 volumes:
   mariadb_data:
+  certbot_www:
+  certbot_conf:
